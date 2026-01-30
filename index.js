@@ -6,7 +6,6 @@ const {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  EmbedBuilder,
 } = require("discord.js");
 
 const client = new Client({
@@ -14,53 +13,35 @@ const client = new Client({
 });
 
 client.once("ready", () => {
-  console.log(`✅ Bot online: ${client.user.tag}`);
+  console.log("✅ Bot Online!");
 });
 
-// ✅ Command /setupverify
-client.on("interactionCreate", async (interaction) => {
-  if (!interaction.isChatInputCommand()) return;
+// ✅ Kirim button otomatis pas bot nyala
+client.on("ready", async () => {
+  const channel = await client.channels.fetch("ID_CHANNEL_VERIF");
 
-  if (interaction.commandName === "setupverify") {
-    const embed = new EmbedBuilder()
-      .setTitle("✅ VERIFIKASI SERVER")
-      .setDescription(
-        "Tekan verifikasi di bawah ini untuk verif agar semua channel terbuka 🔓"
-      );
-
-    const button = new ButtonBuilder()
-      .setCustomId("verify_button")
-      .setLabel("✅ Verifikasi")
-      .setStyle(ButtonStyle.Success);
-
-    const row = new ActionRowBuilder().addComponents(button);
-
-    await interaction.reply({
-      embeds: [embed],
-      components: [row],
-    });
-  }
+  channel.send({
+    content: "**Klik tombol di bawah untuk verifikasi ✅**",
+    components: [
+      new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setCustomId("verify")
+          .setLabel("✅ VERIFIKASI")
+          .setStyle(ButtonStyle.Success)
+      ),
+    ],
+  });
 });
 
-// ✅ Button role verify
+// ✅ Saat button diklik
 client.on("interactionCreate", async (interaction) => {
   if (!interaction.isButton()) return;
 
-  if (interaction.customId === "verify_button") {
-    const role = interaction.guild.roles.cache.get(
-      process.env.VERIFIED_ROLE_ID
-    );
+  if (interaction.customId === "verify") {
+    await interaction.member.roles.add(process.env.VERIFIED_ROLE_ID);
 
-    if (!role)
-      return interaction.reply({
-        content: "❌ Role Verified belum diset!",
-        ephemeral: true,
-      });
-
-    await interaction.member.roles.add(role);
-
-    return interaction.reply({
-      content: "✅ Kamu sudah verified! Semua channel kebuka 🔓",
+    interaction.reply({
+      content: "✅ Kamu sudah verified, channel terbuka!",
       ephemeral: true,
     });
   }
